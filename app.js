@@ -3,9 +3,6 @@
   const melodyEl = $("melody");
   const bpmEl = $("bpm");
   const statsEl = $("stats");
-  const labelsEl = $("labels");
-  const canvas = $("viz");
-  const ctx = canvas.getContext("2d");
   const zipfCanvas = $("zipfChart");
   const zipfCtx = zipfCanvas.getContext("2d");
   const zipfStatsEl = $("zipfStats");
@@ -68,28 +65,17 @@
   }
 
   function generateSimpleMelody() {
-    // Generate a simple ascending/descending melody with clear 3-part structure
-    const part1 = ["C4", "D4", "E4", "F4"];
-    const part2 = ["G4", "A4", "G4", "A4", "B4", "C5"]; // development with peak
-    const part3 = ["B4", "A4", "G4", "F4", "E4", "D4", "C4"]; // resolution
-    
-    return [...part1, ...part2, ...part3].join(" ");
+    // Generate a simple ascending/descending melody
+    const notes = ["C4", "D4", "E4", "F4", "G4", "A4", "G4", "F4", "E4", "D4", "C4"];
+    return notes.join(" ");
   }
 
   function generateComplexMelody() {
-    // Generate complex melody with varied rhythms and clear 3-part structure
+    // Generate complex melody with varied rhythms
     const notes = [];
-    
-    // Statement (8 notes)
     notes.push("C4:1", "E4:1", "G4:0.5", "E4:0.5", "F4:1", "D4:1", "E4:1", "C4:1");
-    
-    // Development (10 notes) - build to peak
-    notes.push("D4:0.5", "E4:0.5", "F4:1", "G4:1", "A4:1.5", "B4:0.5", "C5:2"); // peak at C5
-    notes.push("B4:1", "A4:1", "G4:1");
-    
-    // Resolution (8 notes)
-    notes.push("F4:1", "E4:0.5", "D4:0.5", "E4:1", "C4:1", "D4:1", "C4:2");
-    
+    notes.push("D4:0.5", "E4:0.5", "F4:1", "G4:1", "A4:1.5", "B4:0.5", "C5:2");
+    notes.push("B4:1", "A4:1", "G4:1", "F4:1", "E4:0.5", "D4:0.5", "E4:1", "C4:1", "D4:1", "C4:2");
     return notes.join(" ");
   }
 
@@ -160,95 +146,6 @@
     return Math.max(0, eventsT.length - 1);
   }
 
-  // ----- Visualization -----
-  function draw(eventsT) {
-    const w = canvas.width, h = canvas.height;
-    ctx.clearRect(0,0,w,h);
-
-    // background
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0,0,w,h);
-
-    const pad = 18;
-    const laneTop = 58;
-    const laneH = 84;
-
-    // total duration
-    const total = eventsT.length ? eventsT[eventsT.length - 1].endSec : 0.001;
-
-    // section markers
-    const x1 = pad + (w - 2*pad) * (1/3);
-    const x2 = pad + (w - 2*pad) * (2/3);
-
-    // draw sections background lightly
-    ctx.fillStyle = "rgba(0,0,0,0.03)";
-    ctx.fillRect(pad, laneTop, x1 - pad, laneH);
-    ctx.fillRect(x1, laneTop, x2 - x1, laneH);
-    ctx.fillRect(x2, laneTop, (w - pad) - x2, laneH);
-
-    // draw events bars
-    for (let i = 0; i < eventsT.length; i++) {
-      const ev = eventsT[i];
-      const x = pad + (w - 2*pad) * (ev.startSec / total);
-      const bw = Math.max(1, (w - 2*pad) * (ev.durSec / total));
-
-      let y = laneTop + 8;
-      let bh = laneH - 16;
-
-      // Pitch affects vertical placement slightly (just for feel)
-      if (ev.type === "note") {
-        const midi = ev.midi;
-        // Map midi to lane position (roughly C3..C6)
-        const minM = 48, maxM = 84;
-        const p = Math.min(1, Math.max(0, (midi - minM) / (maxM - minM)));
-        y = laneTop + 8 + (1 - p) * (laneH - 16) * 0.6;
-        bh = (laneH - 16) * 0.4 + 12;
-      }
-
-      // coloring without choosing fancy palettes: use grayscale-ish
-      if (ev.type === "note") ctx.fillStyle = "rgba(0,0,0,0.18)";
-      else if (ev.type === "rest") ctx.fillStyle = "rgba(0,0,0,0.08)";
-      else ctx.fillStyle = "rgba(255,0,0,0.15)"; // invalid
-
-      ctx.fillRect(x, y, bw, bh);
-
-      // label if there's room
-      if (bw > 36) {
-        ctx.fillStyle = "rgba(0,0,0,0.75)";
-        ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-        ctx.fillText(ev.label, x + 6, y + 16);
-      }
-    }
-
-    // marker lines
-    function marker(x, title) {
-      ctx.strokeStyle = "rgba(0,0,0,0.35)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x, laneTop - 18);
-      ctx.lineTo(x, laneTop + laneH + 18);
-      ctx.stroke();
-
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
-      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.fillText(title, x + 6, laneTop - 22);
-    }
-    marker(x1, "1/3");
-    marker(x2, "2/3");
-
-    // section labels
-    ctx.fillStyle = "rgba(0,0,0,0.85)";
-    ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("Statement", pad, 32);
-    ctx.fillText("Development", x1 + 8, 32);
-    ctx.fillText("Resolution", x2 + 8, 32);
-
-    // footer info
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText(`Total: ${total.toFixed(2)}s  |  ${eventsT.length} notes`, pad, h - 16);
-  }
-
   // ----- Audio playback -----
   let audio = null;
   let stopFlag = false;
@@ -302,25 +199,13 @@
     const eventsT = cumulativeTimes(events.filter(e => e.type !== "invalid"), secondsPerBeat);
 
     const total = eventsT.length ? eventsT[eventsT.length - 1].endSec : 0;
-
     const n = eventsT.length;
-    const thirdA = Math.floor(n / 3);
-    const thirdB = Math.floor(2 * n / 3);
 
-    statsEl.textContent = [
-      `Events: ${n} (excluding invalid tokens)`,
-      `Total duration: ${total.toFixed(2)}s @ ${bpm} BPM`
-    ].join("  •  ");
-
-    labelsEl.innerHTML = `
-      <div class="small">
-        <b>Thirds split (by event count):</b>
-        Statement = 1..${thirdA}, Development = ${thirdA + 1}..${thirdB}, Resolution = ${thirdB + 1}..${n}.
-        ${invalid.length ? `<br/><b>Ignored invalid tokens:</b> ${invalid.join(", ")}` : ""}
-      </div>
+    statsEl.innerHTML = `
+      Events: ${n} (excluding invalid tokens) • 
+      Total duration: ${total.toFixed(2)}s @ ${bpm} BPM
+      ${invalid.length ? `<br/><b>Ignored invalid tokens:</b> ${invalid.join(", ")}` : ""}
     `;
-
-    draw(eventsT);
 
     // Zipf analysis
     const zipfData = analyzeZipf(eventsT);

@@ -194,9 +194,6 @@ canvas {
   display: block;
   margin: 20px 0;
 }
-#viz {
-  height: 280px;
-}
 #zipfChart {
   height: 360px;
 }
