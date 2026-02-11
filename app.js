@@ -1040,21 +1040,31 @@
     }
   });
 
-  // Expandable section toggle functionality
-  const faqToggle = $("zipfFaqToggle");
-  const faqAnswer = $("zipfFaqAnswer");
-  const faqIcon = faqToggle.querySelector(".expand-icon");
+  // Expandable section toggle functionality - Zipf's Law
+  const zipfToggle = $("zipfFaqToggle");
+  const zipfAnswer = $("zipfFaqAnswer");
+  const zipfIcon = zipfToggle.querySelector(".expand-icon");
 
-  faqToggle.addEventListener("click", () => {
-    faqAnswer.classList.toggle("open");
-    faqIcon.classList.toggle("open");
+  zipfToggle.addEventListener("click", () => {
+    zipfAnswer.classList.toggle("open");
+    zipfIcon.classList.toggle("open");
     
     // If opening, set up scroll observer for parallax
-    if (faqAnswer.classList.contains("open")) {
+    if (zipfAnswer.classList.contains("open")) {
       setTimeout(() => {
         setupScrollParallax();
       }, 100);
     }
+  });
+
+  // Expandable section toggle functionality - Entropy
+  const entropyToggle = $("entropyFaqToggle");
+  const entropyAnswer = $("entropyFaqAnswer");
+  const entropyIcon = entropyToggle.querySelector(".expand-icon");
+
+  entropyToggle.addEventListener("click", () => {
+    entropyAnswer.classList.toggle("open");
+    entropyIcon.classList.toggle("open");
   });
 
   // Scroll-based parallax for charts

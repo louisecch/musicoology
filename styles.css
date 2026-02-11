@@ -243,7 +243,8 @@ canvas {
 }
 
 /* Expandable Information Section */
-.zipf-intro {
+.zipf-intro,
+.entropy-intro {
   margin-bottom: 32px;
 }
 
@@ -399,6 +400,30 @@ canvas {
   font-size: 15px;
   line-height: 1.6;
   margin: 0;
+}
+
+/* Entropy examples section */
+.entropy-examples {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid #e8e8ed;
+}
+
+.entropy-examples h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.entropy-examples p {
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+.entropy-examples strong {
+  font-weight: 700;
 }
 
 /* Search input group */
