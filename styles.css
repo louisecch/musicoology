@@ -214,7 +214,7 @@ button.secondary:hover {
 canvas {
   width: 100%;
   max-width: 100%;
-  border: 1px solid #d2d2d7;
+  border: 1px solid #e8e8ed;
   border-radius: 12px;
   background: #fff;
   display: block;
@@ -235,19 +235,19 @@ canvas {
 }
 
 /* Text Styles - Editorial typography */
-.hint { 
+.hint {
   color: #666;
   font-size: 13px;
   line-height: 1.7;
   margin-top: 12px;
 }
 
-/* Zipf's Law Introduction - FAQ Style */
+/* Expandable Information Section */
 .zipf-intro {
   margin-bottom: 32px;
 }
 
-.faq-question {
+.expandable-header {
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -258,51 +258,64 @@ canvas {
   transition: opacity 0.2s ease;
 }
 
-.faq-question:hover {
+.expandable-header:hover {
   opacity: 0.7;
 }
 
-.faq-icon {
+.expand-icon {
   font-size: 28px;
   font-weight: 300;
   transition: transform 0.3s ease;
   margin-left: 16px;
 }
 
-.faq-icon.open {
+.expand-icon.open {
   transform: rotate(45deg);
 }
 
-.faq-answer {
+.expandable-content {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.5s ease;
 }
 
-.faq-answer.open {
+.expandable-content.open {
   max-height: 2000px;
   padding-top: 20px;
 }
 
-.faq-answer p,
-.faq-answer ul,
-.faq-answer .zipf-examples {
+.expandable-content p,
+.expandable-content ul,
+.expandable-content .zipf-examples {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 
-.faq-answer.open p,
-.faq-answer.open ul {
+.expandable-content.open p,
+.expandable-content.open ul {
   opacity: 1;
   transform: translateY(0);
   transition-delay: 0.2s;
 }
 
-.faq-answer.open .zipf-examples {
+.expandable-content.open .zipf-examples {
   opacity: 1;
   transform: translateY(0);
   transition-delay: 0.3s;
+}
+
+/* List styling in expandable content */
+.expandable-content ul {
+  margin: 20px 0 32px 0;
+  padding-left: 24px;
+  line-height: 1.8;
+}
+
+.expandable-content li {
+  margin-bottom: 8px;
 }
 
 .zipf-examples {
@@ -315,10 +328,12 @@ canvas {
   margin-bottom: 24px;
   opacity: 0;
   transform: translateY(15px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
 }
 
-.faq-answer.open .zipf-examples h3 {
+.expandable-content.open .zipf-examples h3 {
   opacity: 1;
   transform: translateY(0);
   transition-delay: 0.4s;
@@ -328,7 +343,9 @@ canvas {
 .chart-full {
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
 }
 
 .chart-item.in-view,
@@ -369,6 +386,19 @@ canvas {
 
 .chart-hint {
   margin-top: 8px;
+}
+
+/* Transition text between sections */
+.transition-text {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid #d2d2d7;
+}
+
+.transition-text p {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* Search input group */
@@ -450,6 +480,7 @@ canvas {
   margin: 40px 0;
   line-height: 1.7;
   font-size: 16px;
+  width: 50%;
 }
 .info-box b {
   color: #fff;

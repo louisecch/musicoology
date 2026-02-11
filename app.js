@@ -1040,10 +1040,10 @@
     }
   });
 
-  // FAQ Toggle functionality
+  // Expandable section toggle functionality
   const faqToggle = $("zipfFaqToggle");
   const faqAnswer = $("zipfFaqAnswer");
-  const faqIcon = faqToggle.querySelector(".faq-icon");
+  const faqIcon = faqToggle.querySelector(".expand-icon");
 
   faqToggle.addEventListener("click", () => {
     faqAnswer.classList.toggle("open");

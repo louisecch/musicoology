@@ -22,11 +22,11 @@
       </div>
 
       <div class="zipf-intro">
-        <h2 class="faq-question" id="zipfFaqToggle">
+        <h2 class="expandable-header" id="zipfFaqToggle">
           What is Zipf's Law?
-          <span class="faq-icon">+</span>
+          <span class="expand-icon">+</span>
         </h2>
-        <div class="faq-answer" id="zipfFaqAnswer">
+        <div class="expandable-content" id="zipfFaqAnswer">
           <p>It is a pattern that shows up in many places.</p>
           <p>If you list things by how common they are (most common first):</p>
           <ul>
@@ -39,13 +39,14 @@
           <!-- Educational Examples of Zipf's Law -->
           <div class="zipf-examples">
             <h3>Zipf's Law in Action</h3>
-            
+
             <div class="chart-row">
               <div class="chart-item">
                 <h4>1. Word Frequency in Language</h4>
                 <canvas id="languageZipfChart"></canvas>
                 <p class="hint chart-hint">
-                  In English text, "the" appears twice as often as "of", three times as often as "and", etc.
+                  In English text, "the" appears twice as often as "of", three
+                  times as often as "and", etc.
                 </p>
               </div>
 
@@ -53,7 +54,8 @@
                 <h4>2. Musical Note Frequency (Classical Music)</h4>
                 <canvas id="musicZipfChart"></canvas>
                 <p class="hint chart-hint">
-                  In classical compositions, certain notes dominate while others appear rarely.
+                  In classical compositions, certain notes dominate while others
+                  appear rarely.
                 </p>
               </div>
             </div>
@@ -62,8 +64,15 @@
               <h4>3. Memory Retention (Ebbinghaus Forgetting Curve)</h4>
               <canvas id="forgettingCurveChart"></canvas>
               <p class="hint chart-hint">
-                Memory decay follows a similar power law pattern - rapid initial decline, then slower decay.
+                Memory decay follows a similar power law pattern - rapid initial
+                decline, then slower decay.
               </p>
+            </div>
+
+            <div class="transition-text">
+                      <p>We as humans, love patterns, and get used to patterns.<br>
+          But as usual, we got bored when there's too much of the same thing.
+          Let's talk about entropy then!</p> 
             </div>
           </div>
         </div>
@@ -73,7 +82,6 @@
         <h3>Search Apple Music</h3>
 
         <div class="form-group">
-          <label for="appleMusicSearch">Search for Songs</label>
           <div class="search-input-group">
             <input
               type="text"
@@ -107,7 +115,6 @@
         <h3>Entropy Analysis (Melodic Complexity)</h3>
         <canvas id="entropyChart"></canvas>
         <div class="small" id="entropyStats"></div>
-      </div>
     </div>
 
     <script src="config.js"></script>
