@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>🎵 Melody Analysis: Zipf's Law + Entropy</h1>
+    <h1>Melody Analysis: Zipf's Law + Entropy</h1>
     
     <div class="info-box">
       <b>Theory:</b> Note frequencies often follow <b>Zipf's Law</b>: a few notes appear very frequently while most appear rarely. <b>Entropy</b> measures the unpredictability and complexity of note sequences.
@@ -16,7 +16,7 @@
 
     <!-- Audio Input Section -->
     <div class="card">
-      <h3>🎤 Audio Input</h3>
+      <h3>Audio Input</h3>
       
       <div class="form-group">
         <label for="audioFile">Upload Audio File (MP3, WAV, OGG)</label>
@@ -40,28 +40,28 @@
 
     <!-- Melody Generators Section -->
     <div class="card">
-      <h3>🎹 Melody Generator & Presets</h3>
+      <h3>Melody Generator & Presets</h3>
       
       <div class="button-group">
-        <button id="generateMelody" class="primary">🎲 Generate Random (Zipf-based)</button>
-        <button id="generateSimple" class="secondary">🎵 Generate Simple</button>
-        <button id="generateComplex" class="secondary">🎼 Generate Complex</button>
+        <button id="generateMelody" class="primary">Generate Random (Zipf-based)</button>
+        <button id="generateSimple" class="secondary">Generate Simple</button>
+        <button id="generateComplex" class="secondary">Generate Complex</button>
       </div>
       
       <div class="form-group">
         <label>Famous Melodies:</label>
         <div>
-          <div class="melody-preset" data-melody="F#5:2 E5:2 D5:2 C#5:2 B4:2 A4:2 B4:2 C#5:2 D5:2 C#5:2 B4:2 A4:2 G4:2 F#4:2 G4:2 E4:2 D4:1 E4:1 F#4:1 G4:1 A4:2 D4:1 E4:1 F#4:1 G4:1 A4:2 B4:1 C#5:1 D5:1 E5:1 F#5:2" data-name="Canon in D">🎻 Canon in D</div>
-          <div class="melody-preset" data-melody="C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2" data-name="Twinkle Twinkle">⭐ Twinkle Twinkle</div>
-          <div class="melody-preset" data-melody="G4 E4 E4 F4 D4:2 E4 C4 C4 D4 B3:2 C4:4" data-name="Mary Had a Little Lamb">🐑 Mary Had a Little Lamb</div>
-          <div class="melody-preset" data-melody="C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4:2 E4 F4 G4:2" data-name="Frère Jacques">🔔 Frère Jacques</div>
+          <div class="melody-preset" data-melody="F#5:2 E5:2 D5:2 C#5:2 B4:2 A4:2 B4:2 C#5:2 D5:2 C#5:2 B4:2 A4:2 G4:2 F#4:2 G4:2 E4:2 D4:1 E4:1 F#4:1 G4:1 A4:2 D4:1 E4:1 F#4:1 G4:1 A4:2 B4:1 C#5:1 D5:1 E5:1 F#5:2" data-name="Canon in D">Canon in D</div>
+          <div class="melody-preset" data-melody="C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2" data-name="Twinkle Twinkle">Twinkle Twinkle</div>
+          <div class="melody-preset" data-melody="G4 E4 E4 F4 D4:2 E4 C4 C4 D4 B3:2 C4:4" data-name="Mary Had a Little Lamb">Mary Had a Little Lamb</div>
+          <div class="melody-preset" data-melody="C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4:2 E4 F4 G4:2" data-name="Frère Jacques">Frère Jacques</div>
         </div>
       </div>
     </div>
 
     <!-- Melody Input Section -->
     <div class="card">
-      <h3>✏️ Edit Melody</h3>
+      <h3>Edit Melody</h3>
       
       <div class="row">
         <div style="flex: 1; min-width: 300px;">
@@ -86,8 +86,8 @@
           
           <div class="button-group">
             <button id="analyze">Analyze</button>
-            <button id="play">▶ Play</button>
-            <button id="stop">⏹ Stop</button>
+            <button id="play">Play</button>
+            <button id="stop">Stop</button>
           </div>
           
           <div id="stats" class="small"></div>
@@ -97,14 +97,14 @@
 
     <!-- Zipf's Law Analysis -->
     <div class="card">
-      <h3>📈 Zipf's Law Analysis (Note Frequency Distribution)</h3>
+      <h3>Zipf's Law Analysis (Note Frequency Distribution)</h3>
       <canvas id="zipfChart" width="920" height="300"></canvas>
       <div class="small" id="zipfStats"></div>
     </div>
 
     <!-- Entropy Analysis -->
     <div class="card">
-      <h3>🔀 Entropy Analysis (Melodic Complexity)</h3>
+      <h3>Entropy Analysis (Melodic Complexity)</h3>
       <canvas id="entropyChart" width="920" height="200"></canvas>
       <div class="small" id="entropyStats"></div>
     </div>
