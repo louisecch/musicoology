@@ -35,13 +35,264 @@
   let entropySetup = setupCanvas(entropyCanvas);
   let entropyCtx = entropySetup.ctx;
 
+  // Educational example canvases
+  const languageZipfCanvas = $("languageZipfChart");
+  const musicZipfCanvas = $("musicZipfChart");
+  const forgettingCurveCanvas = $("forgettingCurveChart");
+  
+  let languageSetup, musicSetup, forgettingSetup;
+
   // Re-setup on window resize
   window.addEventListener('resize', () => {
     zipfSetup = setupCanvas(zipfCanvas);
     zipfCtx = zipfSetup.ctx;
     entropySetup = setupCanvas(entropyCanvas);
     entropyCtx = entropySetup.ctx;
+    
+    // Redraw educational charts
+    languageSetup = setupCanvas(languageZipfCanvas);
+    musicSetup = setupCanvas(musicZipfCanvas);
+    forgettingSetup = setupCanvas(forgettingCurveCanvas);
+    drawEducationalCharts();
   });
+
+  // ----- Educational Charts -----
+  function drawEducationalCharts() {
+    drawLanguageZipf();
+    drawMusicZipf();
+    drawForgettingCurve();
+  }
+
+  function drawLanguageZipf() {
+    const { ctx, width: w, height: h } = languageSetup;
+    ctx.clearRect(0, 0, w, h);
+    
+    // Most common English words with frequencies (from corpus analysis)
+    const words = [
+      { word: "the", count: 7000 },
+      { word: "of", count: 3500 },
+      { word: "and", count: 2800 },
+      { word: "to", count: 2400 },
+      { word: "a", count: 2000 },
+      { word: "in", count: 1750 },
+      { word: "is", count: 1400 },
+      { word: "it", count: 1250 },
+      { word: "that", count: 1100 },
+      { word: "for", count: 1000 }
+    ];
+    
+    const pad = 50;
+    const chartW = w - 2 * pad;
+    const chartH = h - 2 * pad;
+    const maxCount = words[0].count;
+    
+    // Axes
+    ctx.strokeStyle = "#d2d2d7";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad);
+    ctx.lineTo(pad, h - pad);
+    ctx.lineTo(w - pad, h - pad);
+    ctx.stroke();
+    
+    // Labels
+    ctx.fillStyle = "#86868b";
+    ctx.font = "11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Frequency", pad - 5, pad - 10);
+    ctx.textAlign = "center";
+    ctx.fillText("Word Rank", w / 2, h - 10);
+    
+    // Draw line
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    
+    words.forEach((d, i) => {
+      const x = pad + (i / (words.length - 1)) * chartW;
+      const y = h - pad - (d.count / maxCount) * chartH;
+      
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    
+    // Draw points and labels
+    words.forEach((d, i) => {
+      const x = pad + (i / (words.length - 1)) * chartW;
+      const y = h - pad - (d.count / maxCount) * chartH;
+      
+      // Point
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Word label
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "10px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(d.word, x, h - pad + 15);
+      
+      // Count
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "600 9px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      ctx.fillText(d.count.toString(), x, y - 10);
+    });
+  }
+
+  function drawMusicZipf() {
+    const { ctx, width: w, height: h } = musicSetup;
+    ctx.clearRect(0, 0, w, h);
+    
+    // Typical note distribution in classical music (approximate)
+    const notes = [
+      { note: "C", count: 1200 },
+      { note: "G", count: 900 },
+      { note: "D", count: 750 },
+      { note: "A", count: 650 },
+      { note: "E", count: 550 },
+      { note: "F", count: 480 },
+      { note: "B", count: 380 },
+      { note: "D#", count: 300 },
+      { note: "A#", count: 240 },
+      { note: "F#", count: 200 }
+    ];
+    
+    const pad = 50;
+    const chartW = w - 2 * pad;
+    const chartH = h - 2 * pad;
+    const maxCount = notes[0].count;
+    
+    // Axes
+    ctx.strokeStyle = "#d2d2d7";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad);
+    ctx.lineTo(pad, h - pad);
+    ctx.lineTo(w - pad, h - pad);
+    ctx.stroke();
+    
+    // Labels
+    ctx.fillStyle = "#86868b";
+    ctx.font = "11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Frequency", pad - 5, pad - 10);
+    ctx.textAlign = "center";
+    ctx.fillText("Note Rank", w / 2, h - 10);
+    
+    // Draw line
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    
+    notes.forEach((d, i) => {
+      const x = pad + (i / (notes.length - 1)) * chartW;
+      const y = h - pad - (d.count / maxCount) * chartH;
+      
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    
+    // Draw points and labels
+    notes.forEach((d, i) => {
+      const x = pad + (i / (notes.length - 1)) * chartW;
+      const y = h - pad - (d.count / maxCount) * chartH;
+      
+      // Point
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Note label
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(d.note, x, h - pad + 15);
+      
+      // Count
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "600 9px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      ctx.fillText(d.count.toString(), x, y - 10);
+    });
+  }
+
+  function drawForgettingCurve() {
+    const { ctx, width: w, height: h } = forgettingSetup;
+    ctx.clearRect(0, 0, w, h);
+    
+    const pad = 50;
+    const chartW = w - 2 * pad;
+    const chartH = h - 2 * pad;
+    
+    // Axes
+    ctx.strokeStyle = "#d2d2d7";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad);
+    ctx.lineTo(pad, h - pad);
+    ctx.lineTo(w - pad, h - pad);
+    ctx.stroke();
+    
+    // Labels
+    ctx.fillStyle = "#86868b";
+    ctx.font = "11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Retention %", pad - 5, pad - 10);
+    ctx.textAlign = "center";
+    ctx.fillText("Time (days)", w / 2, h - 10);
+    
+    // Draw forgetting curve: R = e^(-t/S)
+    // Where R = retention, t = time, S = strength of memory
+    const S = 2; // memory strength parameter
+    
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    
+    for (let i = 0; i <= 100; i++) {
+      const t = (i / 100) * 30; // 30 days
+      const retention = Math.exp(-t / S) * 100;
+      const x = pad + (i / 100) * chartW;
+      const y = h - pad - (retention / 100) * chartH;
+      
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    
+    // Time markers
+    [0, 1, 2, 7, 14, 30].forEach(day => {
+      const x = pad + (day / 30) * chartW;
+      const retention = Math.exp(-day / S) * 100;
+      const y = h - pad - (retention / 100) * chartH;
+      
+      // Marker dot
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Day label
+      ctx.fillStyle = "#86868b";
+      ctx.font = "10px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(day + "d", x, h - pad + 25);
+      
+      // Retention percentage
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = "600 10px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      ctx.fillText(Math.round(retention) + "%", x, y - 10);
+    });
+  }
+
+  // Initialize educational charts
+  languageSetup = setupCanvas(languageZipfCanvas);
+  musicSetup = setupCanvas(musicZipfCanvas);
+  forgettingSetup = setupCanvas(forgettingCurveCanvas);
+  drawEducationalCharts();
 
   // ----- Melody Generation (Zipf-based) -----
   const SCALE_NOTES = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
@@ -788,5 +1039,43 @@
       $("searchAppleMusic").click();
     }
   });
+
+  // FAQ Toggle functionality
+  const faqToggle = $("zipfFaqToggle");
+  const faqAnswer = $("zipfFaqAnswer");
+  const faqIcon = faqToggle.querySelector(".faq-icon");
+
+  faqToggle.addEventListener("click", () => {
+    faqAnswer.classList.toggle("open");
+    faqIcon.classList.toggle("open");
+    
+    // If opening, set up scroll observer for parallax
+    if (faqAnswer.classList.contains("open")) {
+      setTimeout(() => {
+        setupScrollParallax();
+      }, 100);
+    }
+  });
+
+  // Scroll-based parallax for charts
+  function setupScrollParallax() {
+    const chartItems = document.querySelectorAll('.chart-item, .chart-full');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.2,
+      rootMargin: '0px 0px -100px 0px'
+    });
+
+    chartItems.forEach(item => {
+      observer.observe(item);
+    });
+  }
 
 })();

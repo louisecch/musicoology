@@ -1,57 +1,116 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Melody: Zipf's Law + Entropy Analysis</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="container">
-    <h1>Melody Analysis: Zipf's Law + Entropy</h1>
-    
-    <div class="info-box">
-      <b>Theory:</b> Note frequencies often follow <b>Zipf's Law</b>: a few notes appear very frequently while most appear rarely. <b>Entropy</b> measures the unpredictability and complexity of note sequences.
-    </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Melody: Zipf's Law + Entropy Analysis</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Musicoology: Zipf's Law + Entropy</h1>
 
-    <!-- Apple Music Search Section -->
-    <div class="card">
-      <h3>Search Apple Music</h3>
-      
-      <div class="form-group">
-        <label for="appleMusicSearch">Search for Songs</label>
-        <div style="display: flex; gap: 12px; align-items: flex-start;">
-          <input type="text" id="appleMusicSearch" placeholder="Search for a song..." style="width: 100%; max-width: 500px;" />
-          <button id="searchAppleMusic" class="primary">Search</button>
-        </div>
-        <div class="hint">
-          Search Apple Music catalog and play 30-second song previews.
+      <div class="info-box">
+        <b>What makes a song great?</b> I've been thinking it will be
+        interesting to see if we can get something from data visualization.
+        Turns out, songs often follow Zipf's Law and need a certain degree of
+        entropy!
+        <!-- <b>Theory:</b> Note frequencies often follow <b>Zipf's Law</b>: a few
+        notes appear very frequently while most appear rarely.
+        <b>Entropy</b> measures the unpredictability and complexity of note
+        sequences. -->
+      </div>
+
+      <div class="zipf-intro">
+        <h2 class="faq-question" id="zipfFaqToggle">
+          What is Zipf's Law?
+          <span class="faq-icon">+</span>
+        </h2>
+        <div class="faq-answer" id="zipfFaqAnswer">
+          <p>It is a pattern that shows up in many places.</p>
+          <p>If you list things by how common they are (most common first):</p>
+          <ul>
+            <li>The 2nd item appears about half as often as the 1st</li>
+            <li>The 3rd appears about one-third as often</li>
+            <li>The 4th about one-fourth</li>
+            <li>And so on...</li>
+          </ul>
+
+          <!-- Educational Examples of Zipf's Law -->
+          <div class="zipf-examples">
+            <h3>Zipf's Law in Action</h3>
+            
+            <div class="chart-row">
+              <div class="chart-item">
+                <h4>1. Word Frequency in Language</h4>
+                <canvas id="languageZipfChart"></canvas>
+                <p class="hint chart-hint">
+                  In English text, "the" appears twice as often as "of", three times as often as "and", etc.
+                </p>
+              </div>
+
+              <div class="chart-item">
+                <h4>2. Musical Note Frequency (Classical Music)</h4>
+                <canvas id="musicZipfChart"></canvas>
+                <p class="hint chart-hint">
+                  In classical compositions, certain notes dominate while others appear rarely.
+                </p>
+              </div>
+            </div>
+
+            <div class="chart-full">
+              <h4>3. Memory Retention (Ebbinghaus Forgetting Curve)</h4>
+              <canvas id="forgettingCurveChart"></canvas>
+              <p class="hint chart-hint">
+                Memory decay follows a similar power law pattern - rapid initial decline, then slower decay.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div id="appleMusicResults" style="margin: 20px 0;"></div>
+      <div class="card">
+        <h3>Search Apple Music</h3>
 
-      <div class="form-group">
-        <div id="nowPlaying" style="font-size: 14px; color: #666; margin-top: 12px;"></div>
+        <div class="form-group">
+          <label for="appleMusicSearch">Search for Songs</label>
+          <div class="search-input-group">
+            <input
+              type="text"
+              id="appleMusicSearch"
+              placeholder="Search for a song..."
+              class="search-input"
+            />
+            <button id="searchAppleMusic" class="primary">Search</button>
+          </div>
+          <div class="hint">
+            Search Apple Music catalog and play 30-second song previews.
+          </div>
+        </div>
+
+        <div id="appleMusicResults"></div>
+
+        <div class="form-group">
+          <div id="nowPlaying" class="now-playing"></div>
+        </div>
+      </div>
+
+      <!-- Zipf's Law Analysis -->
+      <div class="card">
+        <h3>Zipf's Law Analysis (Note Frequency Distribution)</h3>
+        <canvas id="zipfChart"></canvas>
+        <div class="small" id="zipfStats"></div>
+      </div>
+
+      <!-- Entropy Analysis -->
+      <div class="card">
+        <h3>Entropy Analysis (Melodic Complexity)</h3>
+        <canvas id="entropyChart"></canvas>
+        <div class="small" id="entropyStats"></div>
       </div>
     </div>
 
-    <!-- Zipf's Law Analysis -->
-    <div class="card">
-      <h3>Zipf's Law Analysis (Note Frequency Distribution)</h3>
-      <canvas id="zipfChart"></canvas>
-      <div class="small" id="zipfStats"></div>
-    </div>
-
-    <!-- Entropy Analysis -->
-    <div class="card">
-      <h3>Entropy Analysis (Melodic Complexity)</h3>
-      <canvas id="entropyChart"></canvas>
-      <div class="small" id="entropyStats"></div>
-    </div>
-  </div>
-
-<script src="config.js"></script>
-<script src="app.js"></script>
-</body>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
