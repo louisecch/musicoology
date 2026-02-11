@@ -243,9 +243,19 @@ canvas {
 }
 
 /* Expandable Information Section */
-.zipf-intro,
+.zipf-intro {
+  padding-bottom: 32px;
+  margin-bottom: 0;
+}
+
 .entropy-intro {
   margin-bottom: 32px;
+  margin-top: 0;
+}
+
+.entropy-intro .expandable-header {
+  padding-top: 0;
+  margin-top: 0;
 }
 
 .expandable-header {
