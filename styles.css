@@ -417,6 +417,11 @@ canvas {
   margin: 0;
 }
 
+/* Intro text styling */
+.intro-text {
+  width: 55%;
+}
+
 /* Entropy examples section */
 .entropy-examples {
   margin-top: 32px;
@@ -549,6 +554,9 @@ canvas {
   }
   h1 {
     font-size: 40px;
+  }
+  .intro-text {
+    width: 100%;
   }
 }
 
