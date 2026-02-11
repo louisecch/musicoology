@@ -220,7 +220,7 @@ canvas {
   width: 100%;
   max-width: 100%;
   border: 1px solid #e8e8ed;
-  border-radius: 12px;
+  border-radius: 0;
   background: #fff;
   display: block;
   margin: 16px 0;
@@ -547,6 +547,10 @@ canvas {
   margin-bottom: 32px;
 }
 
+/* ==========================================================================
+   Media Queries
+   ========================================================================== */
+
 /* Responsive - Magazine layout */
 @media (max-width: 1024px) {
   .container {
@@ -556,6 +560,12 @@ canvas {
     font-size: 40px;
   }
   .intro-text {
+    width: 100%;
+  }
+}
+
+@media (max-width: 991px) {
+  .info-box {
     width: 100%;
   }
 }
@@ -583,6 +593,7 @@ canvas {
     max-width: 100%;
   }
   .info-box {
+    width: 100%;
     padding: 24px;
   }
   .chart-row {
