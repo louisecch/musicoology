@@ -535,6 +535,11 @@ canvas {
   letter-spacing: 0.05em;
 }
 
+/* Mobile line break */
+.mobile-break {
+  display: none;
+}
+
 /* Button Groups - Editorial layout */
 .button-group {
   display: flex;
@@ -609,6 +614,9 @@ canvas {
   }
   .transition-text p {
     width: 100%;
+  }
+  .mobile-break {
+    display: block;
   }
 }
 
