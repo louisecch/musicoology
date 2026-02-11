@@ -141,6 +141,28 @@ input[type="file"]::file-selector-button:hover {
   color: #000;
 }
 
+/* Audio player */
+audio {
+  min-height: 44px;
+  border: 2px solid #000;
+  border-radius: 0;
+  background: #000;
+  outline: none;
+}
+
+audio::-webkit-media-controls-panel {
+  background: #000;
+  border-radius: 0;
+}
+
+audio::-webkit-media-controls-play-button,
+audio::-webkit-media-controls-timeline,
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display,
+audio::-webkit-media-controls-volume-slider {
+  filter: invert(1);
+}
+
 /* Buttons - Bold editorial style */
 button { 
   min-height: 48px;
@@ -183,22 +205,23 @@ button.secondary:hover {
   color: #fff;
 }
 
-/* Canvas - Clean editorial presentation */
+/* Canvas - Apple-style clean presentation */
 canvas { 
   width: 100%;
   max-width: 100%;
-  height: auto;
-  border: 2px solid #000;
-  border-radius: 0;
-  background: #fafafa;
+  border: 1px solid #d2d2d7;
+  border-radius: 12px;
+  background: #fff;
   display: block;
-  margin: 20px 0;
+  margin: 16px 0;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 #zipfChart {
-  height: 360px;
+  height: 320px;
 }
 #entropyChart {
-  height: 200px;
+  height: 180px;
 }
 
 /* Text Styles - Editorial typography */

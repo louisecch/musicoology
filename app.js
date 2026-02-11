@@ -1,17 +1,47 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  const melodyEl = $("melody");
-  const bpmEl = $("bpm");
-  const statsEl = $("stats");
   const zipfCanvas = $("zipfChart");
-  const zipfCtx = zipfCanvas.getContext("2d");
   const zipfStatsEl = $("zipfStats");
   const entropyCanvas = $("entropyChart");
-  const entropyCtx = entropyCanvas.getContext("2d");
   const entropyStatsEl = $("entropyStats");
-  const audioFileEl = $("audioFile");
-  const audioUrlEl = $("audioUrl");
-  const audioStatusEl = $("audioStatus");
+  const appleMusicSearchEl = $("appleMusicSearch");
+  const appleMusicResultsEl = $("appleMusicResults");
+  const nowPlayingEl = $("nowPlaying");
+  
+  // Hidden audio element for playback
+  let audioPlayer = null;
+
+  // Apple Music API Configuration (loaded from config.js)
+  const APPLE_MUSIC_API_KEY = typeof CONFIG !== 'undefined' ? CONFIG.APPLE_MUSIC_API_KEY : "YOUR_KEY_HERE";
+
+  // Setup high DPI canvas
+  function setupCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    
+    return { ctx, width: rect.width, height: rect.height };
+  }
+
+  // Initialize canvases
+  let zipfSetup = setupCanvas(zipfCanvas);
+  let zipfCtx = zipfSetup.ctx;
+  
+  let entropySetup = setupCanvas(entropyCanvas);
+  let entropyCtx = entropySetup.ctx;
+
+  // Re-setup on window resize
+  window.addEventListener('resize', () => {
+    zipfSetup = setupCanvas(zipfCanvas);
+    zipfCtx = zipfSetup.ctx;
+    entropySetup = setupCanvas(entropyCanvas);
+    entropyCtx = entropySetup.ctx;
+  });
 
   // ----- Melody Generation (Zipf-based) -----
   const SCALE_NOTES = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5"];
@@ -103,7 +133,7 @@
     return 440 * Math.pow(2, (midi - 69) / 12);
   }
 
-  function parseMelody(text) {
+  function parseMelody(text, bpm = 110) {
     const parts = text.trim().split(/\s+/).filter(Boolean);
     const events = [];
     for (const p of parts) {
@@ -125,7 +155,11 @@
         events.push({ type: "note", midi, durBeats: dur, label: noteToken.toUpperCase() });
       }
     }
-    return events;
+    
+    const secondsPerBeat = 60 / bpm;
+    const eventsT = cumulativeTimes(events.filter(e => e.type !== "invalid"), secondsPerBeat);
+    
+    return { events, eventsT, bpm };
   }
 
   function cumulativeTimes(events, secondsPerBeat) {
@@ -188,76 +222,6 @@
     // We don't hard-stop the AudioContext; scheduled nodes will fade quickly anyway.
   }
 
-  // ----- Analyze action -----
-  function analyze() {
-    const bpm = Math.max(30, Math.min(240, parseFloat(bpmEl.value || "110")));
-    bpmEl.value = bpm;
-
-    const events = parseMelody(melodyEl.value);
-    const invalid = events.filter(e => e.type === "invalid").map(e => e.label);
-    const secondsPerBeat = 60 / bpm;
-    const eventsT = cumulativeTimes(events.filter(e => e.type !== "invalid"), secondsPerBeat);
-
-    const total = eventsT.length ? eventsT[eventsT.length - 1].endSec : 0;
-    const n = eventsT.length;
-
-    statsEl.innerHTML = `
-      Events: ${n} (excluding invalid tokens) • 
-      Total duration: ${total.toFixed(2)}s @ ${bpm} BPM
-      ${invalid.length ? `<br/><b>Ignored invalid tokens:</b> ${invalid.join(", ")}` : ""}
-    `;
-
-    // Zipf analysis
-    const zipfData = analyzeZipf(eventsT);
-    drawZipfChart(zipfData);
-    
-    if (zipfData.length > 0) {
-      const zipfFit = calculateZipfFit(zipfData);
-      const uniqueNotes = zipfData.length;
-      const totalNotes = eventsT.filter(e => e.type === "note").length;
-      const topNote = zipfData[0];
-      const topNotePercent = ((topNote.count / totalNotes) * 100).toFixed(1);
-      
-      zipfStatsEl.innerHTML = `
-        <b>Zipf's Law Analysis:</b>
-        Unique notes: ${uniqueNotes} • Total notes: ${totalNotes} • 
-        Most frequent: <b>${topNote.note}</b> (${topNote.count} times, ${topNotePercent}%) • 
-        Zipf fit (R²): <b>${zipfFit.toFixed(3)}</b> ${zipfFit > 0.7 ? '✓ Strong Zipf pattern!' : zipfFit > 0.4 ? '~ Moderate Zipf pattern' : '✗ Weak Zipf pattern'}
-      `;
-    } else {
-      zipfStatsEl.textContent = "No notes to analyze.";
-    }
-
-    // Entropy analysis
-    const noteEntropy = calculateEntropy(eventsT);
-    const intervalEntropy = calculateIntervalEntropy(eventsT);
-    const uniqueNotes = zipfData.length;
-    const maxPossibleEntropy = uniqueNotes > 0 ? Math.log2(uniqueNotes) : 0;
-    
-    drawEntropyChart(noteEntropy, intervalEntropy, Math.max(maxPossibleEntropy, 5));
-    
-    if (eventsT.filter(e => e.type === "note").length > 0) {
-      const normalizedEntropy = maxPossibleEntropy > 0 ? (noteEntropy / maxPossibleEntropy * 100).toFixed(1) : 0;
-      
-      let complexityLevel = "Low";
-      if (normalizedEntropy > 80) complexityLevel = "Very High";
-      else if (normalizedEntropy > 60) complexityLevel = "High";
-      else if (normalizedEntropy > 40) complexityLevel = "Medium";
-      
-      entropyStatsEl.innerHTML = `
-        <b>Entropy Analysis:</b>
-        Note Entropy: <b>${noteEntropy.toFixed(2)} bits</b> (${normalizedEntropy}% of max) • 
-        Interval Entropy: <b>${intervalEntropy.toFixed(2)} bits</b> • 
-        Complexity: <b>${complexityLevel}</b>
-        <br/>
-        <i>Higher entropy = more unpredictable/complex melody. Lower entropy = more repetitive/simple melody.</i>
-      `;
-    } else {
-      entropyStatsEl.textContent = "No notes to analyze.";
-    }
-
-    return { eventsT, bpm };
-  }
 
   // ----- Zipf's Law Analysis -----
   function analyzeZipf(eventsT) {
@@ -279,56 +243,59 @@
   }
 
   function drawZipfChart(zipfData) {
-    const w = zipfCanvas.width;
-    const h = zipfCanvas.height;
+    const w = zipfSetup.width;
+    const h = zipfSetup.height;
     zipfCtx.clearRect(0, 0, w, h);
 
     if (zipfData.length === 0) {
-      zipfCtx.fillStyle = "#999";
-      zipfCtx.font = "14px system-ui";
-      zipfCtx.fillText("No note data to display", 20, h / 2);
+      zipfCtx.fillStyle = "#86868b";
+      zipfCtx.font = "15px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      zipfCtx.textAlign = "center";
+      zipfCtx.fillText("No note data to display", w / 2, h / 2);
       return;
     }
 
-    const pad = 60;
+    const pad = 50;
     const chartW = w - 2 * pad;
     const chartH = h - 2 * pad;
 
-    // Background
-    zipfCtx.fillStyle = "#fff";
-    zipfCtx.fillRect(0, 0, w, h);
-
-    // Axes
-    zipfCtx.strokeStyle = "#333";
-    zipfCtx.lineWidth = 2;
+    // Axes - subtle gray
+    zipfCtx.strokeStyle = "#d2d2d7";
+    zipfCtx.lineWidth = 1;
     zipfCtx.beginPath();
     zipfCtx.moveTo(pad, pad);
     zipfCtx.lineTo(pad, h - pad);
     zipfCtx.lineTo(w - pad, h - pad);
     zipfCtx.stroke();
 
-    // Labels
-    zipfCtx.fillStyle = "#333";
-    zipfCtx.font = "12px system-ui";
-    zipfCtx.fillText("Frequency", 10, 30);
-    zipfCtx.fillText("Note Rank", w / 2 - 30, h - 20);
+    // Labels - Apple gray
+    zipfCtx.fillStyle = "#86868b";
+    zipfCtx.font = "12px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+    zipfCtx.textAlign = "left";
+    zipfCtx.fillText("Frequency", pad - 5, pad - 10);
+    zipfCtx.textAlign = "center";
+    zipfCtx.fillText("Note Rank", w / 2, h - 15);
 
     const maxCount = Math.max(...zipfData.map(d => d.count));
     const barWidth = Math.min(60, chartW / zipfData.length - 4);
 
-    // Draw bars
+    // Draw bars with Apple-style gradient
     zipfData.forEach((d, i) => {
       const x = pad + (i + 0.5) * (chartW / zipfData.length) - barWidth / 2;
       const barH = (d.count / maxCount) * chartH;
       const y = h - pad - barH;
 
-      // Bar
-      zipfCtx.fillStyle = `hsl(${200 - i * 20}, 70%, 60%)`;
+      // Bar with gradient (Apple blue)
+      const gradient = zipfCtx.createLinearGradient(x, y, x, h - pad);
+      gradient.addColorStop(0, '#007aff');
+      gradient.addColorStop(1, '#0051d5');
+      zipfCtx.fillStyle = gradient;
       zipfCtx.fillRect(x, y, barWidth, barH);
 
       // Note label
-      zipfCtx.fillStyle = "#333";
-      zipfCtx.font = "11px system-ui";
+      zipfCtx.fillStyle = "#1d1d1f";
+      zipfCtx.font = "11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      zipfCtx.textAlign = "center";
       zipfCtx.save();
       zipfCtx.translate(x + barWidth / 2, h - pad + 15);
       zipfCtx.rotate(-Math.PI / 4);
@@ -336,16 +303,17 @@
       zipfCtx.restore();
 
       // Count label
-      zipfCtx.fillStyle = "#000";
-      zipfCtx.font = "bold 12px system-ui";
-      zipfCtx.fillText(d.count.toString(), x + barWidth / 2 - 8, y - 5);
+      zipfCtx.fillStyle = "#1d1d1f";
+      zipfCtx.font = "600 11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+      zipfCtx.textAlign = "center";
+      zipfCtx.fillText(d.count.toString(), x + barWidth / 2, y - 5);
     });
 
-    // Zipf curve overlay (theoretical)
+    // Zipf curve overlay (theoretical) - Apple orange
     if (zipfData.length > 1) {
-      zipfCtx.strokeStyle = "rgba(255, 0, 0, 0.6)";
+      zipfCtx.strokeStyle = "rgba(255, 149, 0, 0.8)";
       zipfCtx.lineWidth = 2;
-      zipfCtx.setLineDash([5, 5]);
+      zipfCtx.setLineDash([4, 4]);
       zipfCtx.beginPath();
       
       const C = zipfData[0].count; // constant for Zipf: f(r) = C / r
@@ -362,19 +330,30 @@
       zipfCtx.setLineDash([]);
     }
 
-    // Legend
-    zipfCtx.fillStyle = "#666";
-    zipfCtx.font = "11px system-ui";
-    zipfCtx.fillText("Blue bars: Actual frequencies", w - 200, 30);
-    zipfCtx.strokeStyle = "rgba(255, 0, 0, 0.6)";
+    // Legend - Apple style
+    zipfCtx.fillStyle = "#86868b";
+    zipfCtx.font = "11px -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif";
+    zipfCtx.textAlign = "left";
+    
+    // Blue bar legend
+    const gradient2 = zipfCtx.createLinearGradient(w - 200, 25, w - 200, 35);
+    gradient2.addColorStop(0, '#007aff');
+    gradient2.addColorStop(1, '#0051d5');
+    zipfCtx.fillStyle = gradient2;
+    zipfCtx.fillRect(w - 200, 25, 15, 10);
+    zipfCtx.fillStyle = "#86868b";
+    zipfCtx.fillText("Actual frequencies", w - 180, 33);
+    
+    // Orange line legend
+    zipfCtx.strokeStyle = "rgba(255, 149, 0, 0.8)";
     zipfCtx.lineWidth = 2;
-    zipfCtx.setLineDash([5, 5]);
+    zipfCtx.setLineDash([4, 4]);
     zipfCtx.beginPath();
-    zipfCtx.moveTo(w - 200, 45);
-    zipfCtx.lineTo(w - 150, 45);
+    zipfCtx.moveTo(w - 200, 48);
+    zipfCtx.lineTo(w - 185, 48);
     zipfCtx.stroke();
     zipfCtx.setLineDash([]);
-    zipfCtx.fillText("Red line: Ideal Zipf curve", w - 145, 48);
+    zipfCtx.fillText("Ideal Zipf curve", w - 180, 52);
   }
 
   function calculateZipfFit(zipfData) {
@@ -447,8 +426,8 @@
   }
 
   function drawEntropyChart(noteEntropy, intervalEntropy, maxEntropy) {
-    const w = entropyCanvas.width;
-    const h = entropyCanvas.height;
+    const w = entropySetup.width;
+    const h = entropySetup.height;
     entropyCtx.clearRect(0, 0, w, h);
 
     const pad = 60;
@@ -524,35 +503,38 @@
   }
 
   // ----- Audio Analysis (Pitch Detection) -----
-  async function analyzeAudioFile(file) {
-    audioStatusEl.textContent = "Loading audio...";
+  async function analyzeAudioUrl(url, title, artist) {
+    nowPlayingEl.innerHTML = `Analyzing: <b>${title}</b> by ${artist}...`;
     
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const arrayBuffer = await response.arrayBuffer();
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       
-      audioStatusEl.textContent = "Analyzing pitches... This may take a moment.";
-      
       // Extract melody using pitch detection
-      const melody = await extractMelodyFromAudio(audioBuffer, audioContext);
+      const melody = await extractMelodyFromAudio(audioBuffer);
       
       if (melody.length === 0) {
-        audioStatusEl.textContent = "❌ No clear melody detected. Try a simpler monophonic recording.";
+        nowPlayingEl.innerHTML = `Playing: <b>${title}</b> - No clear melody detected for analysis`;
         return;
       }
       
-      melodyEl.value = melody.join(" ");
-      audioStatusEl.textContent = `✅ Extracted ${melody.length} notes from audio!`;
-      last = analyze();
+      const melodyStr = melody.join(" ");
+      nowPlayingEl.innerHTML = `Now playing: <b>${title}</b> by ${artist} (Extracted ${melody.length} notes)`;
+      
+      // Analyze the extracted melody
+      analyzeMelody(melodyStr);
       
     } catch (error) {
-      audioStatusEl.textContent = `❌ Error: ${error.message}`;
+      nowPlayingEl.innerHTML = `Error analyzing audio: ${error.message}`;
       console.error(error);
     }
   }
 
-  async function extractMelodyFromAudio(audioBuffer, audioContext) {
+  async function extractMelodyFromAudio(audioBuffer) {
     const channelData = audioBuffer.getChannelData(0); // Use first channel
     const sampleRate = audioBuffer.sampleRate;
     
@@ -592,7 +574,7 @@
     }
     
     // Limit to reasonable length
-    return melody.slice(0, 100);
+    return melody.slice(0, 150);
   }
 
   function detectPitch(buffer, sampleRate) {
@@ -654,78 +636,157 @@
     return `${noteName}${octave}`;
   }
 
-  async function loadAudioFromUrl(url) {
-    audioStatusEl.textContent = "Fetching audio from URL...";
+  // ----- Apple Music API Integration -----
+  async function searchAppleMusic(query) {
+    appleMusicResultsEl.innerHTML = "Searching Apple Music...";
     
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const response = await fetch(
+        `https://api.music.apple.com/v1/catalog/us/search?term=${encodeURIComponent(query)}&types=songs&limit=3`,
+        {
+          headers: {
+            'Authorization': `Bearer ${APPLE_MUSIC_API_KEY}`
+          }
+        }
+      );
       
-      const blob = await response.blob();
-      const file = new File([blob], "audio", { type: blob.type });
-      await analyzeAudioFile(file);
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const songs = data.results?.songs?.data || [];
+      
+      if (songs.length === 0) {
+        appleMusicResultsEl.innerHTML = "<p>No results found. Try a different search term.</p>";
+        return;
+      }
+      
+      // Display results
+      let html = '<div style="margin-top: 12px;"><b>Results:</b></div>';
+      songs.forEach((song, index) => {
+        const title = song.attributes.name;
+        const artist = song.attributes.artistName;
+        const album = song.attributes.albumName;
+        const previewUrl = song.attributes.previews?.[0]?.url;
+        const artwork = song.attributes.artwork?.url.replace('{w}', '60').replace('{h}', '60');
+        
+        html += `
+          <div style="padding: 12px; margin: 8px 0; border: 2px solid #000; background: #fff; display: flex; gap: 12px; align-items: center;">
+            ${artwork ? `<img src="${artwork}" alt="Album art" style="width: 60px; height: 60px; border: 2px solid #000;" />` : ''}
+            <div style="flex: 1;">
+              <div style="font-weight: 700;">${title}</div>
+              <div style="font-size: 13px; color: #666; margin: 4px 0;">${artist} - ${album}</div>
+              ${previewUrl ? 
+                `<button class="secondary apple-preview-btn" data-url="${previewUrl}" data-title="${title}" data-artist="${artist}" style="margin-top: 8px;">Play & Analyze</button>` :
+                `<div style="font-size: 12px; color: #999;">No preview available</div>`
+              }
+            </div>
+          </div>
+        `;
+      });
+      
+      appleMusicResultsEl.innerHTML = html;
+      
+      // Add click handlers for preview buttons
+      document.querySelectorAll('.apple-preview-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const url = btn.dataset.url;
+          const title = btn.dataset.title;
+          const artist = btn.dataset.artist;
+          
+          // Play preview in hidden audio element
+          if (!audioPlayer) {
+            audioPlayer = new Audio();
+          }
+          audioPlayer.src = url;
+          audioPlayer.play();
+          
+          nowPlayingEl.innerHTML = `Playing: <b>${title}</b> by ${artist}`;
+          
+          // Analyze the audio in background
+          await analyzeAudioUrl(url, title, artist);
+        });
+      });
       
     } catch (error) {
-      audioStatusEl.textContent = `❌ Error loading URL: ${error.message}. Check CORS and URL validity.`;
+      appleMusicResultsEl.innerHTML = `<p style="color: red;">Error: ${error.message}. Check your API key.</p>`;
       console.error(error);
     }
   }
 
-  // Hook up UI
-  let last = analyze();
-  $("analyze").addEventListener("click", () => { last = analyze(); });
-  $("play").addEventListener("click", async () => {
-    last = analyze();
-    if (last.eventsT.length) await play(last.eventsT, last.bpm);
-  });
-  $("stop").addEventListener("click", () => stop());
 
-  // Melody generation buttons
-  $("generateMelody").addEventListener("click", () => {
-    melodyEl.value = generateZipfMelody(32, 1.2);
-    last = analyze();
-  });
-
-  $("generateSimple").addEventListener("click", () => {
-    melodyEl.value = generateSimpleMelody();
-    last = analyze();
-  });
-
-  $("generateComplex").addEventListener("click", () => {
-    melodyEl.value = generateComplexMelody();
-    last = analyze();
-  });
-
-  // Melody presets
-  document.querySelectorAll(".melody-preset").forEach(preset => {
-    preset.addEventListener("click", () => {
-      melodyEl.value = preset.dataset.melody;
-      last = analyze();
-    });
-  });
-
-  // Audio file upload
-  audioFileEl.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      analyzeAudioFile(file);
-    }
-  });
-
-  // Audio URL loading
-  $("loadAudio").addEventListener("click", () => {
-    const url = audioUrlEl.value.trim();
-    if (url) {
-      loadAudioFromUrl(url);
+  // Helper function to analyze a melody string
+  function analyzeMelody(melodyStr, bpm = 110) {
+    const result = parseMelody(melodyStr, bpm);
+    
+    // Zipf analysis
+    const zipfData = analyzeZipf(result.eventsT);
+    drawZipfChart(zipfData);
+    
+    if (zipfData.length > 0) {
+      const zipfFit = calculateZipfFit(zipfData);
+      const uniqueNotes = zipfData.length;
+      const totalNotes = result.eventsT.filter(e => e.type === "note").length;
+      const topNote = zipfData[0];
+      const topNotePercent = ((topNote.count / totalNotes) * 100).toFixed(1);
+      
+      zipfStatsEl.innerHTML = `
+        <b>Zipf's Law Analysis:</b>
+        Unique notes: ${uniqueNotes} • Total notes: ${totalNotes} • 
+        Most frequent: <b>${topNote.note}</b> (${topNote.count} times, ${topNotePercent}%) • 
+        Zipf fit (R²): <b>${zipfFit.toFixed(3)}</b> ${zipfFit > 0.7 ? 'Strong Zipf pattern' : zipfFit > 0.4 ? 'Moderate Zipf pattern' : 'Weak Zipf pattern'}
+      `;
     } else {
-      audioStatusEl.textContent = "Please enter a URL";
+      zipfStatsEl.textContent = "No notes to analyze.";
+    }
+    
+    // Entropy analysis
+    const noteEntropy = calculateEntropy(result.eventsT);
+    const intervalEntropy = calculateIntervalEntropy(result.eventsT);
+    const uniqueNotes = zipfData.length;
+    const maxPossibleEntropy = uniqueNotes > 0 ? Math.log2(uniqueNotes) : 0;
+    
+    drawEntropyChart(noteEntropy, intervalEntropy, Math.max(maxPossibleEntropy, 5));
+    
+    if (result.eventsT.filter(e => e.type === "note").length > 0) {
+      const normalizedEntropy = maxPossibleEntropy > 0 ? (noteEntropy / maxPossibleEntropy * 100).toFixed(1) : 0;
+      
+      let complexityLevel = "Low";
+      if (normalizedEntropy > 80) complexityLevel = "Very High";
+      else if (normalizedEntropy > 60) complexityLevel = "High";
+      else if (normalizedEntropy > 40) complexityLevel = "Medium";
+      
+      entropyStatsEl.innerHTML = `
+        <b>Entropy Analysis:</b>
+        Note Entropy: <b>${noteEntropy.toFixed(2)} bits</b> (${normalizedEntropy}% of max) • 
+        Interval Entropy: <b>${intervalEntropy.toFixed(2)} bits</b> • 
+        Complexity: <b>${complexityLevel}</b>
+        <br/>
+        <i>Higher entropy = more unpredictable/complex melody. Lower entropy = more repetitive/simple melody.</i>
+      `;
+    } else {
+      entropyStatsEl.textContent = "No notes to analyze.";
+    }
+    
+    return result;
+  }
+
+  // Apple Music search
+  $("searchAppleMusic").addEventListener("click", () => {
+    const query = appleMusicSearchEl.value.trim();
+    if (query) {
+      searchAppleMusic(query);
+    } else {
+      appleMusicResultsEl.innerHTML = "<p>Please enter a search term</p>";
     }
   });
 
-  // re-analyze when editing (lightly debounced)
-  let t = null;
-  melodyEl.addEventListener("input", () => {
-    clearTimeout(t);
-    t = setTimeout(() => { last = analyze(); }, 250);
+  // Enter key support for Apple Music search
+  appleMusicSearchEl.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      $("searchAppleMusic").click();
+    }
   });
+
 })();
