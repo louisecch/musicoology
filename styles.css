@@ -597,6 +597,12 @@ canvas {
     width: 100%;
     padding: 24px;
   }
+  .zipf-explanation {
+    margin-bottom: 50px;
+  }
+  .expandable-content.open .zipf-examples h3 {
+    margin-top: 17px;
+  }
   .chart-row {
     flex-direction: column;
     gap: 24px;
